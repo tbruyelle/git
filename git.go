@@ -3,6 +3,7 @@
 package git
 
 import (
+	"fmt"
 	"github.com/tbruyelle/qexec"
 	"strings"
 )
@@ -32,10 +33,14 @@ func Log(start, end string) ([]Commit, error) {
 		return nil, err
 	}
 	lines := strings.Split(strings.TrimSpace(output), "\n")
-	commits := make([]Commit, len(lines))
-	for i, line := range lines {
-		tokens := strings.Split(line, " ")
-		commits[i] = Commit{tokens[0], tokens[1]}
+	commits := make([]Commit, 0)
+	for _, line := range lines {
+		tokens := strings.SplitN(line, " ", 1)
+		fmt.Printf("%+v %d\n", tokens, len(tokens))
+		if len(tokens) != 2 {
+			continue
+		}
+		commits = append(commits, Commit{tokens[0], tokens[1]})
 	}
 	return commits, nil
 }
