@@ -5,6 +5,26 @@ import (
 	"testing"
 )
 
+func TestRefExists(t *testing.T) {
+	ref := "moncul"
+	exist, err := RefExists(ref)
+	if err != nil {
+		t.Fatalf("Error occured during RefExists %v", err)
+	}
+	if exist {
+		t.Errorf("Ref %s shoudn't exist", ref)
+	}
+
+	ref = "f3c2fb"
+	exist, err = RefExists(ref)
+	if err != nil {
+		t.Fatalf("Error occured during RefExists %v", err)
+	}
+	if !exist {
+		t.Errorf("Ref %s shoud exist", ref)
+	}
+}
+
 func TestLog(t *testing.T) {
 
 	commits, err := Log("f3c2fb", "6cbe88b")
