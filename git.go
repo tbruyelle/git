@@ -7,6 +7,40 @@ import (
 	"strings"
 )
 
+// Branch returns the current branch.
+func Branch() (string, error) {
+	branch, err := qexec.Run("git", "rev-parse", "--abbrev-ref", "HEAD")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(branch), nil
+}
+
+// RevParse executes the git rev-parse command.
+func RevParse(arg string) (string, error) {
+	ref, err := qexec.Run("git", "rev-parse", "-q", arg)
+	if err != nil {
+		return "", nil
+	}
+	return strings.TrimSpace(ref), nil
+}
+
+// Fetch executes the git fetch command.
+func Fetch() error {
+	_, err := qexec.Run("git", "fetch")
+	return err
+}
+
+// HasLocalDiff returns true if repo has local modifications.
+func HasLocalDiff() (bool, error) {
+	_, err := qexec.Run("git", "diff", "--quiet", "HEAD")
+	status, err := qexec.ExitStatus(err)
+	if err != nil {
+		return false, err
+	}
+	return status != 0, nil
+}
+
 // RefExists checks if the ref exists in the repository.
 func RefExists(ref string) (bool, error) {
 	_, err := qexec.Run("git", "rev-parse", "--quiet", "--verify", ref)

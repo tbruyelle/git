@@ -5,6 +5,40 @@ import (
 	"testing"
 )
 
+func TestBranch(t *testing.T) {
+	want := "master"
+
+	branch, err := Branch()
+
+	if err != nil {
+		t.Fatalf("Error occured during Branch %v", err)
+	}
+	if branch != want {
+		t.Errorf("Branch returns %v, want %v", branch, want)
+	}
+}
+
+func TestRevParse(t *testing.T) {
+	want := "428e743ec249d734bdcb1fcbb1b603dd752f9687"
+
+	ref, err := RevParse("428e743ec")
+
+	if err != nil {
+		t.Fatalf("Error occurred during RevParse %v", err)
+	}
+	if ref != want {
+		t.Errorf("RevParse returns %v, want %v", ref, want)
+	}
+}
+
+func TestHasLocalDiff(t *testing.T) {
+	_, err := HasLocalDiff()
+
+	if err != nil {
+		t.Fatalf("Error occurred during HasLocalDiff %v", err)
+	}
+}
+
 func TestRefExists(t *testing.T) {
 	ref := "moncul"
 	exist, err := RefExists(ref)
