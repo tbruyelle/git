@@ -3,8 +3,10 @@
 package git
 
 import (
+	"errors"
 	"fmt"
 	"github.com/tbruyelle/qexec"
+	"regexp"
 	"strings"
 )
 
@@ -85,4 +87,45 @@ func Log(start, end string) ([]Commit, error) {
 		commits = append(commits, Commit{tokens[0], tokens[1]})
 	}
 	return commits, nil
+}
+
+// RepoInfo returns structured data about the current repository.
+func Repository() (*Repo, error) {
+	remote, err := Remote("origin")
+	if err != nil {
+		return nil, err
+	}
+	return parseRepo(remote)
+}
+
+type Repo struct {
+	Owner, Name string
+}
+
+var remoteGitUrlSsh = regexp.MustCompile("git@\\S+:(\\w+)/(\\w+)(\\.git)?")
+var remoteGitUrlHttp = regexp.MustCompile("https?://\\S+/(\\w+)/(\\w+)(\\.git)?")
+
+func parseRepo(remote string) (*Repo, error) {
+	if strings.Index(remote, "http") != -1 {
+		res := remoteGitUrlHttp.FindAllStringSubmatch(remote, -1)
+		if len(res) == 0 || len(res[0]) < 3 {
+			return nil, errors.New("Unable to parse remote " + remote)
+		}
+		repo := &Repo{
+			Owner: res[0][1],
+			Name:  res[0][2],
+		}
+		return repo, nil
+	} else if strings.Index(remote, "git@") != -1 {
+		res := remoteGitUrlSsh.FindAllStringSubmatch(remote, -1)
+		if len(res) == 0 || len(res[0]) < 3 {
+			return nil, errors.New("Unable to parse remote " + remote)
+		}
+		repo := &Repo{
+			Owner: res[0][1],
+			Name:  res[0][2],
+		}
+		return repo, nil
+	}
+	return nil, errors.New("Unhandled remote " + remote)
 }

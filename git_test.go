@@ -1,6 +1,7 @@
 package git
 
 import (
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 )
@@ -97,4 +98,38 @@ func TestLog(t *testing.T) {
 	if !reflect.DeepEqual(commits, want) {
 		t.Errorf("Log returned %v, want %v", commits, want)
 	}
+}
+
+func TestParseRepo(t *testing.T) {
+	wantName, wantOwner := "name", "owner"
+
+	for _, remote := range []string{
+		"git@github.com:owner/name.git",
+		"git@github.com:owner/name",
+		"git@bitbucket.org:owner/name",
+		"https://github.com/owner/name",
+		"http://github.com/owner/name",
+		"https://github.com/owner/name.git",
+	} {
+		repo, err := parseRepo(remote)
+
+		assert := assert.New(t)
+		assert.Nil(err)
+		assert.NotNil(repo)
+		assert.Equal(wantName, repo.Name)
+		assert.Equal(wantOwner, repo.Owner)
+	}
+}
+
+func TestRepoInfo(t *testing.T) {
+	want := &Repo{
+		Name:  "git",
+		Owner: "tbruyelle",
+	}
+
+	repo, err := Repository()
+
+	assert := assert.New(t)
+	assert.Nil(err)
+	assert.Equal(want, repo)
 }
