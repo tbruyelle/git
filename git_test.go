@@ -5,6 +5,27 @@ import (
 	"testing"
 )
 
+func TestRemote(t *testing.T) {
+	want := []string{"git@github.com:tbruyelle/git.git", "git@github-perso:tbruyelle/git.git"}
+
+	remote, err := Remote("origin")
+
+	if err != nil {
+		t.Fatalf("Error occurred during Remote %v", err)
+	}
+	if remote != want[0] && remote != want[1] {
+		t.Errorf("Remote returns %v, want one of %v", remote, want)
+	}
+}
+
+func TestRemoteFail(t *testing.T) {
+	_, err := Remote("notexist")
+
+	if err == nil {
+		t.Errorf("Remote on not existing name should fail")
+	}
+}
+
 func TestBranch(t *testing.T) {
 	want := "master"
 

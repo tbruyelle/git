@@ -3,9 +3,19 @@
 package git
 
 import (
+	"fmt"
 	"github.com/tbruyelle/qexec"
 	"strings"
 )
+
+// Remote returns the requested remote url
+func Remote(name string) (string, error) {
+	remote, err := qexec.Run("git", "config", "--get", fmt.Sprintf("remote.%s.url", name))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(remote), err
+}
 
 // Branch returns the current branch.
 func Branch() (string, error) {
