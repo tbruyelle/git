@@ -36,6 +36,26 @@ func (r Repository) Fetch() error {
 	return Fetch()
 }
 
+func (r Repository) Checkout(ref string) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return Checkout(ref)
+}
+func (r Repository) Merge(ref string) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return Merge(ref)
+}
+
+func (r Repository) ResetHard(ref string) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return ResetHard(ref)
+}
+
 func (r Repository) HasLocalDiff() (bool, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -70,6 +90,18 @@ func RevParse(arg string) (string, error) {
 	return strings.TrimSpace(ref), nil
 }
 
+// Checkout executes the git checkout command.
+func Checkout(ref string) error {
+	_, err := qexec.Run("git", "checkout", ref)
+	return err
+}
+
+// Merge executes the git merge command.
+func Merge(ref string) error {
+	_, err := qexec.Run("git", "merge", ref)
+	return err
+}
+
 // Fetch executes the git fetch command.
 func Fetch() error {
 	_, err := qexec.Run("git", "fetch")
@@ -97,6 +129,12 @@ func RefExists(ref string) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+// ResetHard executes the git reset --hard command.
+func ResetHard(ref string) error {
+	_, err := qexec.Run("git", "reset", "--hard", ref)
+	return err
 }
 
 type Commit struct {
