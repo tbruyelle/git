@@ -6,9 +6,42 @@ import (
 	"errors"
 	"fmt"
 	"github.com/tbruyelle/qexec"
+	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
+
+var mutex sync.Mutex
+
+// Repository exposes the same functions than the package but removes the
+// constraint of having the CWD in the repository path.
+// Each commands will change the CWD and lock a mutex until the command is done.
+// This should make the thing works in goroutines.
+type Repository struct {
+	Path string
+}
+
+func (r Repository) Branch() (string, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return Branch()
+}
+
+func (r Repository) Fetch() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return Fetch()
+}
+
+func (r Repository) HasLocalDiff() (bool, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return HasLocalDiff()
+}
 
 // Remote returns the requested remote url
 func Remote(name string) (string, error) {
@@ -89,39 +122,39 @@ func Log(start, end string) ([]Commit, error) {
 	return commits, nil
 }
 
-// RepoInfo returns structured data about the current repository.
-func Repository() (*Repo, error) {
+// RemoteOrigin returns structured data about the origin remote.
+func RemoteOrigin() (*RemoteInfo, error) {
 	remote, err := Remote("origin")
 	if err != nil {
 		return nil, err
 	}
-	return parseRepo(remote)
+	return parseRemote(remote)
 }
 
-type Repo struct {
+type RemoteInfo struct {
 	Owner, Name string
 }
 
 var remoteGitUrlSsh = regexp.MustCompile("git@\\S+:(\\w+)/(\\w+)(\\.git)?")
 var remoteGitUrlHttp = regexp.MustCompile("https?://\\S+/(\\w+)/(\\w+)(\\.git)?")
 
-func parseRepo(remote string) (*Repo, error) {
+func parseRemote(remote string) (*RemoteInfo, error) {
 	if strings.Index(remote, "http") != -1 {
 		res := remoteGitUrlHttp.FindAllStringSubmatch(remote, -1)
 		if len(res) == 0 || len(res[0]) < 3 {
 			return nil, errors.New("Unable to parse remote " + remote)
 		}
-		repo := &Repo{
+		r := &RemoteInfo{
 			Owner: res[0][1],
 			Name:  res[0][2],
 		}
-		return repo, nil
+		return r, nil
 	} else if strings.Index(remote, "git@") != -1 {
 		res := remoteGitUrlSsh.FindAllStringSubmatch(remote, -1)
 		if len(res) == 0 || len(res[0]) < 3 {
 			return nil, errors.New("Unable to parse remote " + remote)
 		}
-		repo := &Repo{
+		repo := &RemoteInfo{
 			Owner: res[0][1],
 			Name:  res[0][2],
 		}

@@ -92,15 +92,15 @@ func TestLog(t *testing.T) {
 		t.Fatalf("Log returns %d commits, want 2", size)
 	}
 	want := []Commit{
-		Commit{Ref: "6cbe88b", Message: "Test Log"},
-		Commit{Ref: "e83f98a", Message: "Start testing"},
+		{Ref: "6cbe88b", Message: "Test Log"},
+		{Ref: "e83f98a", Message: "Start testing"},
 	}
 	if !reflect.DeepEqual(commits, want) {
 		t.Errorf("Log returned %v, want %v", commits, want)
 	}
 }
 
-func TestParseRepo(t *testing.T) {
+func TestParseRemote(t *testing.T) {
 	wantName, wantOwner := "name", "owner"
 
 	for _, remote := range []string{
@@ -111,25 +111,25 @@ func TestParseRepo(t *testing.T) {
 		"http://github.com/owner/name",
 		"https://github.com/owner/name.git",
 	} {
-		repo, err := parseRepo(remote)
+		r, err := parseRemote(remote)
 
 		assert := assert.New(t)
 		assert.Nil(err)
-		assert.NotNil(repo)
-		assert.Equal(wantName, repo.Name)
-		assert.Equal(wantOwner, repo.Owner)
+		assert.NotNil(r)
+		assert.Equal(wantName, r.Name)
+		assert.Equal(wantOwner, r.Owner)
 	}
 }
 
-func TestRepoInfo(t *testing.T) {
-	want := &Repo{
+func TestRemoteOrigin(t *testing.T) {
+	want := &RemoteInfo{
 		Name:  "git",
 		Owner: "tbruyelle",
 	}
 
-	repo, err := Repository()
+	r, err := RemoteOrigin()
 
 	assert := assert.New(t)
 	assert.Nil(err)
-	assert.Equal(want, repo)
+	assert.Equal(want, r)
 }
