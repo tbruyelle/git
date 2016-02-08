@@ -29,6 +29,13 @@ func (r Repository) Branch() (string, error) {
 	return Branch()
 }
 
+func (r Repository) Pull() error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return Pull()
+}
+
 func (r Repository) Fetch() error {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -61,6 +68,12 @@ func (r Repository) HasLocalDiff() (bool, error) {
 	defer mutex.Unlock()
 	os.Chdir(r.Path)
 	return HasLocalDiff()
+}
+
+// Pull executes the git pull command
+func Pull() error {
+	_, err := qexec.Run("git", "pull")
+	return err
 }
 
 // Remote returns the requested remote url
