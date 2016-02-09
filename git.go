@@ -22,6 +22,20 @@ type Repository struct {
 	Path string
 }
 
+func (r Repository) AddRemote(name, url string) error {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return AddRemote(name, url)
+}
+
+func (r Repository) Remote(name string) (string, error) {
+	mutex.Lock()
+	defer mutex.Unlock()
+	os.Chdir(r.Path)
+	return Remote(name)
+}
+
 func (r Repository) Branch() (string, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -29,18 +43,18 @@ func (r Repository) Branch() (string, error) {
 	return Branch()
 }
 
-func (r Repository) Pull() error {
+func (r Repository) Pull(remote string) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 	os.Chdir(r.Path)
-	return Pull()
+	return Pull(remote)
 }
 
-func (r Repository) Fetch() error {
+func (r Repository) Fetch(remote string) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 	os.Chdir(r.Path)
-	return Fetch()
+	return Fetch(remote)
 }
 
 func (r Repository) Checkout(ref string) error {
@@ -70,9 +84,15 @@ func (r Repository) HasLocalDiff() (bool, error) {
 	return HasLocalDiff()
 }
 
+// AddRemote add a new remote to the repository.
+func AddRemote(name, url string) error {
+	_, err := qexec.Run("git", "remote", "add", name, url)
+	return err
+}
+
 // Pull executes the git pull command
-func Pull() error {
-	_, err := qexec.Run("git", "pull")
+func Pull(remote string) error {
+	_, err := qexec.Run("git", "pull", remote)
 	return err
 }
 
@@ -116,8 +136,8 @@ func Merge(ref string) error {
 }
 
 // Fetch executes the git fetch command.
-func Fetch() error {
-	_, err := qexec.Run("git", "fetch")
+func Fetch(remote string) error {
+	_, err := qexec.Run("git", "fetch", remote)
 	return err
 }
 

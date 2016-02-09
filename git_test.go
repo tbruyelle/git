@@ -133,3 +133,12 @@ func TestRemoteOrigin(t *testing.T) {
 	assert.Nil(err)
 	assert.Equal(want, r)
 }
+
+func TestCheckout(t *testing.T) {
+
+	err := Checkout("notexist")
+
+	if err == nil {
+		t.Error("Checkout on non existing branch should fail")
+	}
+}
