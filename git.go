@@ -124,9 +124,16 @@ func RevParse(arg string) (string, error) {
 }
 
 // Checkout executes the git checkout command.
-func Checkout(ref, remote string) error {
-	_, err := qexec.Run("git", "checkout", ref, remote)
-	return err
+// If remote is specified, first delete the local branch if any
+// and recreate according to that remote.
+func Checkout(ref, remote string) (err error) {
+	if remote == "" {
+		_, err = qexec.Run("git", "checkout", ref)
+		return
+	}
+	qexec.Run("git", "branch", "-D", ref)
+	_, err = qexec.Run("git", "checkout", "-b", ref, remote)
+	return
 }
 
 // Merge executes the git merge command.
