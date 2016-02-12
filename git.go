@@ -57,11 +57,11 @@ func (r Repository) Fetch(remote string) error {
 	return Fetch(remote)
 }
 
-func (r Repository) Checkout(ref string) error {
+func (r Repository) Checkout(ref, remote string) error {
 	mutex.Lock()
 	defer mutex.Unlock()
 	os.Chdir(r.Path)
-	return Checkout(ref)
+	return Checkout(ref, remote)
 }
 func (r Repository) Merge(ref string) error {
 	mutex.Lock()
@@ -124,8 +124,8 @@ func RevParse(arg string) (string, error) {
 }
 
 // Checkout executes the git checkout command.
-func Checkout(ref string) error {
-	_, err := qexec.Run("git", "checkout", ref)
+func Checkout(ref, remote string) error {
+	_, err := qexec.Run("git", "checkout", ref, remote)
 	return err
 }
 
